@@ -9,17 +9,42 @@ import (
 	"os"
 )
 
+type Config struct {
+	DataStore string
+}
+
 type ImageInfo struct {
 	Id  string
 	URL string
 }
 
+var dpath string
+
 func main() {
+	loadConfig()
+
 	http.HandleFunc("/", watchFlow)
 	err := http.ListenAndServe(":21564", nil)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
+}
+
+func loadConfig() {
+	filePtr, err := os.Open("slings-config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer filePtr.Close()
+	var info Config
+	decoder := json.NewDecoder(filePtr)
+	err = decoder.Decode(&info)
+	if err != nil {
+		fmt.Println("Failed loading config: ", err.Error())
+	}
+
+	dpath = info.DataStore
 }
 
 func watchFlow(w http.ResponseWriter, r *http.Request) {
@@ -34,13 +59,15 @@ func watchFlow(w http.ResponseWriter, r *http.Request) {
 }
 
 func downloadImage(fname string, url string) {
-	err := os.MkdirAll("T:/DataStore/image_original", os.ModePerm)
+	imgpath := fmt.Sprintf("%s/image_original", dpath)
+
+	err := os.MkdirAll(imgpath, os.ModePerm)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	file, err := os.Create(fmt.Sprintf("T:/DataStore/image_original/%s.jpg", fname))
+	file, err := os.Create(fmt.Sprintf("%s/%s.jpg", imgpath, fname))
 
 	if err != nil {
 		log.Fatal(err)
