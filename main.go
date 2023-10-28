@@ -18,6 +18,7 @@ type ImageInfo struct {
 }
 
 var dpath string
+var ipath string
 
 func main() {
 	loadConfig()
@@ -51,6 +52,12 @@ func loadConfig() {
 	fmt.Println("DataStore: ", info.DataStore)
 
 	dpath = info.DataStore
+	ipath = fmt.Sprintf("%s/image_original", dpath)
+	err = os.MkdirAll(ipath, os.ModePerm)
+	if err != nil {
+		fmt.Println("[Err] MkdirAll: ", err)
+		return
+	}
 }
 
 func watchFlow(w http.ResponseWriter, r *http.Request) {
@@ -68,16 +75,15 @@ func watchFlow(w http.ResponseWriter, r *http.Request) {
 }
 
 func downloadImage(fname string, url string) {
-	imgpath := fmt.Sprintf("%s/image_original", dpath)
+	img := fmt.Sprintf("%s/%s.jpg", ipath, fname)
 
-	err := os.MkdirAll(imgpath, os.ModePerm)
-
-	if err != nil {
-		fmt.Println("[Err] MkdirAll: ", err)
+	if _, err := os.Stat(img); err == nil {
+		// path exists
+		fmt.Printf("[Info] Existed: %s\n", img)
 		return
 	}
 
-	file, err := os.Create(fmt.Sprintf("%s/%s.jpg", imgpath, fname))
+	file, err := os.Create(img)
 
 	if err != nil {
 		fmt.Println("[Err] Create File: ", err)
