@@ -9,12 +9,12 @@ import (
 )
 
 type Config struct {
-	DataStore string
+	DataStore string `json:"DataStore"`
 }
 
 type ImageInfo struct {
-	Id  string
-	URL string
+	Id  string `json:"img_id"`
+	URL string `json:"img_url"`
 }
 
 var dpath string
@@ -56,13 +56,15 @@ func loadConfig() {
 func watchFlow(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	decoder := json.NewDecoder(r.Body)
-	var t ImageInfo
-	err := decoder.Decode(&t)
+	var imgArr []ImageInfo
+	err := decoder.Decode(&imgArr)
 	if err != nil {
 		panic(err)
 	}
 
-	downloadImage(t.Id, t.URL)
+	for i := 0; i < len(imgArr); i++ {
+		go downloadImage(imgArr[i].Id, imgArr[i].URL)
+	}
 }
 
 func downloadImage(fname string, url string) {
