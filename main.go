@@ -34,6 +34,12 @@ func watchFlow(w http.ResponseWriter, r *http.Request) {
 }
 
 func downloadImage(fname string, url string) {
+	err := os.MkdirAll("T:/DataStore/image_original", os.ModePerm)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	file, err := os.Create(fmt.Sprintf("T:/DataStore/image_original/%s.jpg", fname))
 
 	if err != nil {
