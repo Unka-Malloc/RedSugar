@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"os"
 )
@@ -26,14 +25,18 @@ func main() {
 	http.HandleFunc("/", watchFlow)
 	err := http.ListenAndServe(":21564", nil)
 	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
+		fmt.Println(err)
+		return
 	}
+
+	fmt.Println("Listening: ", 21564)
 }
 
 func loadConfig() {
 	filePtr, err := os.Open("slings-config.json")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	defer filePtr.Close()
@@ -42,7 +45,10 @@ func loadConfig() {
 	err = decoder.Decode(&info)
 	if err != nil {
 		fmt.Println("Failed loading config: ", err.Error())
+		return
 	}
+
+	fmt.Println("DataStore: ", info.DataStore)
 
 	dpath = info.DataStore
 }
@@ -55,6 +61,7 @@ func watchFlow(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+
 	downloadImage(t.Id, t.URL)
 }
 
@@ -64,13 +71,15 @@ func downloadImage(fname string, url string) {
 	err := os.MkdirAll(imgpath, os.ModePerm)
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	file, err := os.Create(fmt.Sprintf("%s/%s.jpg", imgpath, fname))
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	defer file.Close()
@@ -78,7 +87,8 @@ func downloadImage(fname string, url string) {
 	response, err := http.Get(url)
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	defer response.Body.Close()
@@ -86,7 +96,8 @@ func downloadImage(fname string, url string) {
 	_, err = io.Copy(file, response.Body)
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return
 	}
 
 	fmt.Printf("[Image] Downloaded: %s\n", url)
