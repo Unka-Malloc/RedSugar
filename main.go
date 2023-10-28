@@ -44,7 +44,7 @@ func loadConfig() {
 	decoder := json.NewDecoder(filePtr)
 	err = decoder.Decode(&info)
 	if err != nil {
-		fmt.Println("Failed loading config: ", err.Error())
+		fmt.Println("[Err] Loading Config: ", err)
 		return
 	}
 
@@ -73,14 +73,14 @@ func downloadImage(fname string, url string) {
 	err := os.MkdirAll(imgpath, os.ModePerm)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("[Err] MkdirAll: ", err)
 		return
 	}
 
 	file, err := os.Create(fmt.Sprintf("%s/%s.jpg", imgpath, fname))
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("[Err] Create File: ", err)
 		return
 	}
 
@@ -89,7 +89,7 @@ func downloadImage(fname string, url string) {
 	response, err := http.Get(url)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("[Err] Get Response: ", err)
 		return
 	}
 
@@ -98,9 +98,9 @@ func downloadImage(fname string, url string) {
 	_, err = io.Copy(file, response.Body)
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("[Err] Copy File: ", err)
 		return
 	}
 
-	fmt.Printf("[Image] Downloaded: %s\n", url)
+	fmt.Printf("[Info] Downloaded: %s\n", url)
 }
